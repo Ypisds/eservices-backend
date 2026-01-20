@@ -1,28 +1,26 @@
 package com.Ypisds.eservices.model;
 
 import com.Ypisds.eservices.dto.request.UsuarioRequestDTO;
+import com.Ypisds.eservices.enums.UsuarioRoles;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 public class Usuario implements UserDetails {
 
     @Id
@@ -47,15 +45,17 @@ public class Usuario implements UserDetails {
     @LastModifiedDate
     private LocalDateTime modifiedDate;
 
-    public Usuario(UsuarioRequestDTO dto){
-        this.email = dto.email();
-        this.login = dto.login();
-        this.password = dto.password();
-    }
+    @Column
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(value = EnumType.STRING)
+    private Set<UsuarioRoles> role;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return this.role.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                .toList();
     }
 
     @Override
@@ -81,5 +81,16 @@ public class Usuario implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Usuario usuario)) return false;
+        return Objects.equals(id, usuario.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }
