@@ -21,6 +21,7 @@ import java.util.*;
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString
 public class Usuario implements UserDetails {
 
     @Id
@@ -49,6 +50,9 @@ public class Usuario implements UserDetails {
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(value = EnumType.STRING)
     private Set<UsuarioRoles> role;
+
+    @OneToMany(targetEntity = Servico.class, mappedBy = "anunciante", cascade = CascadeType.REMOVE)
+    private List<Servico> servicos;
 
 
     @Override

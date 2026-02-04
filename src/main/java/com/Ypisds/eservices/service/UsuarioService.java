@@ -5,32 +5,26 @@ import com.Ypisds.eservices.dto.request.UsuarioRequestDTO;
 import com.Ypisds.eservices.dto.response.LoginResponseDTO;
 import com.Ypisds.eservices.dto.response.UsuarioResponseDTO;
 import com.Ypisds.eservices.enums.UsuarioRoles;
-import com.Ypisds.eservices.exception.BadArgumentException;
 import com.Ypisds.eservices.exception.UserAlreadyExistsException;
 import com.Ypisds.eservices.mapper.UsuarioMapper;
 import com.Ypisds.eservices.model.Usuario;
 import com.Ypisds.eservices.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
+
 
 @Service
 @RequiredArgsConstructor
 public class UsuarioService {
 
-
     private final UsuarioRepository repository;
-    private final AuthenticationManager manager;
-    private final TokenService tokenService;
     private final PasswordEncoder encoder;
     private final UsuarioMapper mapper;
+    private final LoginService loginService;
 
     public UsuarioResponseDTO createUsuario(UsuarioRequestDTO dto){
         Optional<Usuario> usuario = repository.findByLoginOrEmail(dto.login(), dto.email());
@@ -43,10 +37,7 @@ public class UsuarioService {
     }
 
     public LoginResponseDTO login(UsuarioLoginDTO dto){
-        var userAuth = new UsernamePasswordAuthenticationToken(dto.login(), dto.password());
-        var auth = manager.authenticate(userAuth);
-        var usuario = (Usuario) auth.getPrincipal();
-        String token = tokenService.createToken(usuario.getUsername());
+        String token = loginService.authenticateUser(dto);
         return new LoginResponseDTO(token);
     }
 

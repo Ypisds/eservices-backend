@@ -1,8 +1,10 @@
 package com.Ypisds.eservices.service;
 
+
 import com.Ypisds.eservices.model.Usuario;
 import com.Ypisds.eservices.repository.UsuarioRepository;
 import lombok.AllArgsConstructor;
+
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -26,4 +28,6 @@ public class AuthenticationService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return repository.findByLogin(username);
     }
+
+
 }
