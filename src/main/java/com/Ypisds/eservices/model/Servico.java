@@ -46,9 +46,6 @@ public class Servico {
     @Enumerated(value = EnumType.STRING)
     private Status status;
 
-    @Column
-    private Integer unidades;
-
     @Column(name = "created_date")
     @CreatedDate
     private LocalDateTime createdDate;

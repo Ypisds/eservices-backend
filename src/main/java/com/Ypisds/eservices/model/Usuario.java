@@ -67,6 +67,12 @@ public class Usuario implements UserDetails {
         return this.login;
     }
 
+    public Usuario(String email, String login, String password){
+        this.email = email;
+        this.login = login;
+        this.password = password;
+    }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;

@@ -30,4 +30,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ArgumentErrorResponseDTO> handleAuthenticationException(AuthenticationException e){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ArgumentErrorResponseDTO("Authentication error", Collections.emptyList()));
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ArgumentErrorResponseDTO> handleIllegalArgumentException(IllegalArgumentException e){
+        return ResponseEntity.badRequest().body(new ArgumentErrorResponseDTO(e.getMessage(), Collections.emptyList()));
+    }
 }
