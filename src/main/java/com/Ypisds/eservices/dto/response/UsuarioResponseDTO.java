@@ -9,6 +9,7 @@ import java.util.UUID;
 public record UsuarioResponseDTO(
         UUID id,
         String login,
+        String name,
         String email,
         Set<UsuarioRoles> roles,
         LocalDateTime createdAt

@@ -52,7 +52,7 @@ public class UsuarioServiceTest {
     void setup(){
         mapperSetup = new UsuarioMapper();
         encoderSetup = new BCryptPasswordEncoder();
-        dtoRequest = new UsuarioRequestDTO("Usuario", "senha", "email@gmail.com");
+        dtoRequest = new UsuarioRequestDTO("Usuario", "senha","nome", "email@gmail.com");
         usuarioBase = mapperSetup.toEntity(dtoRequest);
     }
 
@@ -73,6 +73,7 @@ public class UsuarioServiceTest {
         UsuarioResponseDTO resposta = usuarioService.createUsuario(dtoRequest);
 
         assertEquals(resposta.id(), usuarioRetornado.getId());
+        assertEquals(resposta.name(), usuarioRetornado.getName());
         assertEquals(resposta.email(), usuarioRetornado.getEmail());
         assertEquals(resposta.login(), usuarioRetornado.getLogin());
         assertEquals(resposta.roles(), usuarioRetornado.getRole());

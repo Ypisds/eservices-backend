@@ -12,12 +12,14 @@ public class UsuarioMapper {
         Usuario usuario = new Usuario();
         usuario.setLogin(dto.login());
         usuario.setEmail(dto.email());
+        usuario.setName(dto.name());
         return usuario;
     }
 
     public UsuarioResponseDTO entityToResponseDTO(Usuario usuario){
         return new UsuarioResponseDTO(usuario.getId(),
                 usuario.getLogin(),
+                usuario.getName(),
                 usuario.getEmail(),
                 usuario.getRole(),
                 usuario.getCreatedDate());

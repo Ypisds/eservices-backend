@@ -54,8 +54,8 @@ class UsuarioControllerTest {
 
     @BeforeEach
     void setup(){
-        requestDTO = new UsuarioRequestDTO("usuario", "senha", "email@gmail.com");
-        responseDTO = new UsuarioResponseDTO(UUID.randomUUID(), "usuario", "email@gmail.com", Set.of(UsuarioRoles.USER), LocalDateTime.now());
+        requestDTO = new UsuarioRequestDTO("usuario", "senha", "name", "email@gmail.com");
+        responseDTO = new UsuarioResponseDTO(UUID.randomUUID(), "usuario","name", "email@gmail.com", Set.of(UsuarioRoles.USER), LocalDateTime.now());
     }
 
     @Test
@@ -63,6 +63,7 @@ class UsuarioControllerTest {
         String json = """
                 {
                     "login": "usuario",
+                    "name": "name",
                     "password": "senha",
                     "email": "email@gmail.com"
                 }
@@ -79,6 +80,7 @@ class UsuarioControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNotEmpty())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.login").value(responseDTO.login()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(responseDTO.name()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.email").value(responseDTO.email()));
 
 
@@ -86,12 +88,12 @@ class UsuarioControllerTest {
 
     @ParameterizedTest
     @CsvSource("""
-            usuario,,email@gmail.com
-            ,senha,email@gmail.com
-            usuario,senha,
-            usuario,senha,emailinvalido
+            usuario,,,email@gmail.com
+            ,senha,name,email@gmail.com
+            usuario,senha,,
+            usuario,senha,,emailinvalido
             """)
-    void deveDarErroAoColocarInformaçõesNulasAoRegistrarOuComEmailInválido(String login, String email, String password) throws Exception{
+    void deveDarErroAoColocarInformaçõesNulasAoRegistrarOuComEmailInválido(String login, String name, String email, String password) throws Exception{
         String json = """
                 {
                     "login": %s,
