@@ -3,6 +3,7 @@ package com.Ypisds.eservices.service;
 import com.Ypisds.eservices.dto.request.ServicoPatchRequestDTO;
 import com.Ypisds.eservices.dto.request.ServicoRequestDTO;
 import com.Ypisds.eservices.dto.response.ServicoResponseDTO;
+import com.Ypisds.eservices.enums.Status;
 import com.Ypisds.eservices.exception.SameServiceExistsException;
 import com.Ypisds.eservices.exception.ServiceNotExistsException;
 import com.Ypisds.eservices.exception.UnauthorizedServiceOperationException;
@@ -10,9 +11,15 @@ import com.Ypisds.eservices.mapper.ServicoMapper;
 import com.Ypisds.eservices.model.Servico;
 import com.Ypisds.eservices.model.Usuario;
 import com.Ypisds.eservices.repository.ServicoRepository;
+import com.Ypisds.eservices.repository.specification.ServiceSpecification;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -49,6 +56,47 @@ public class ServicoService {
         servicoPatched = repository.save(servicoPatched);
 
         return mapper.toResponseDTO(servicoPatched);
+    }
+
+    public ServicoResponseDTO getServicoById(UUID id){
+        Optional<Servico> servicoOptional = repository.findById(id);
+        if(servicoOptional.isEmpty()) throw new ServiceNotExistsException("Serviço não existe");
+
+        return mapper.toResponseDTO(servicoOptional.get());
+    }
+
+    public Page<ServicoResponseDTO> getServicoByQuery(String titulo, BigDecimal preco, Status status, Integer ano, int pageNumber){
+        if(pageNumber <= 0 ) throw new RuntimeException();
+
+        Specification<Servico> specs = Specification.unrestricted();
+
+        if(titulo != null){
+            specs = specs.and(ServiceSpecification.hasTituloLike(titulo));
+        }
+        if(preco != null){
+            specs = specs.and(ServiceSpecification.precoLessThanOrEqualTo(preco));
+        }
+        if(status != null){
+            specs = specs.and(ServiceSpecification.hasStatusEquals(status));
+        }
+        if(ano != null){
+            specs = specs.and(ServiceSpecification.createdInThisAno(ano));
+        }
+
+        Page<ServicoResponseDTO> servicos = repository.findBy(specs, q-> q.as(Servico.class)
+                .project("categoria", "anunciante")
+                .page(PageRequest.of(pageNumber, 10))
+                .map(f -> new ServicoResponseDTO(
+                        f.getId(),
+                        f.getTitulo(),
+                        f.getDescricao(),
+                        f.getPreco(),
+                        f.getCategoria(),
+                        f.getStatus(),
+                        f.getAnunciante().getId()
+                )));
+
+        return servicos;
     }
 
 }

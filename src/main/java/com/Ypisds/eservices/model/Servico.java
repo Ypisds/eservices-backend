@@ -38,9 +38,8 @@ public class Servico {
     private BigDecimal preco;
 
     @Column
-    @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(value = EnumType.STRING)
-    private Set<CategoriaServico> categorias;
+    private CategoriaServico categoria;
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
@@ -68,5 +67,14 @@ public class Servico {
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
+    }
+
+    public Servico(String titulo, String descricao, BigDecimal preco, CategoriaServico categoria, Status status, Usuario anunciante){
+        this.titulo = titulo;
+        this.descricao = descricao;
+        this.preco = preco;
+        this.categoria = categoria;
+        this.status = status;
+        this.anunciante = anunciante;
     }
 }

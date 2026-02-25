@@ -30,4 +30,10 @@ public class ServicoController {
         ServicoResponseDTO response = service.patchServico(UUID.fromString(id), dto);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @GetMapping("{id}")
+    public ResponseEntity<ServicoResponseDTO> getServicoById(@PathVariable String id){
+        ServicoResponseDTO response = service.getServicoById(UUID.fromString(id));
+        return ResponseEntity.ok(response);
+    }
 }

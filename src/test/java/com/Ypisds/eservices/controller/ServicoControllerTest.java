@@ -55,12 +55,12 @@ public class ServicoControllerTest {
 
     @BeforeEach
     void setup(){
-        requestDTO = new ServicoRequestDTO("titulo", "descricao", BigDecimal.TEN, Set.of(CategoriaServico.OUTROS), Status.DISPONIVEL);
-        patchRequestDTO = new ServicoPatchRequestDTO("titulo novo", "descricao nova", BigDecimal.ONE, Set.of(CategoriaServico.AULAS), Status.PAUSADO);
-        responseDTO = new ServicoResponseDTO(UUID.randomUUID(), "titulo", "descricao", BigDecimal.TEN, Set.of(CategoriaServico.OUTROS), Status.DISPONIVEL, usuarioId);
+        requestDTO = new ServicoRequestDTO("titulo", "descricao", BigDecimal.TEN, CategoriaServico.OUTROS, Status.DISPONIVEL);
+        patchRequestDTO = new ServicoPatchRequestDTO("titulo novo", "descricao nova", BigDecimal.ONE, CategoriaServico.AULAS, Status.PAUSADO);
+        responseDTO = new ServicoResponseDTO(UUID.randomUUID(), "titulo", "descricao", BigDecimal.TEN, CategoriaServico.OUTROS, Status.DISPONIVEL, usuarioId);
         usuarioCriador = new Usuario("email@gmail.com", "usuario", "senha");
         usuarioCriador.setId(usuarioId);
-        patchResponseDTO = new ServicoResponseDTO(patchId, "titulo novo", "descricao nova", BigDecimal.ONE, Set.of(CategoriaServico.AULAS), Status.PAUSADO, usuarioId);
+        patchResponseDTO = new ServicoResponseDTO(patchId, "titulo novo", "descricao nova", BigDecimal.ONE, CategoriaServico.AULAS, Status.PAUSADO, usuarioId);
 
     }
 
@@ -71,16 +71,13 @@ public class ServicoControllerTest {
                     "titulo": "titulo",
                     "descricao": "descricao",
                     "preco": 10.00,
-                    "categorias": ["OUTROS"],
+                    "categoria": "OUTROS",
                     "status": "PAUSADO"
                 }
                 """;
 
         when(service.createServico(any())).thenReturn(responseDTO);
 
-        String[] categorias = responseDTO.categorias().stream()
-                        .map(element -> element.name())
-                                .toArray(String[]::new);
 
         mvc.perform(
                 MockMvcRequestBuilders
@@ -93,7 +90,7 @@ public class ServicoControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.titulo").value(responseDTO.titulo()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.descricao").value(responseDTO.descricao()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.preco").value(responseDTO.preco()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.categorias", containsInAnyOrder(categorias)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.categoria").value(responseDTO.categoria().name()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(responseDTO.status().name()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.idAnunciante").value(responseDTO.idAnunciante().toString()));
 
@@ -106,7 +103,7 @@ public class ServicoControllerTest {
                     "titulo": "titulo",
                     "descricao": "descricao",
                     "preco": 10.00,
-                    "categorias": ["OUTROS"],
+                    "categoria": "OUTROS",
                     "status": "PAUSADO"
                 }
                 """;
@@ -129,7 +126,7 @@ public class ServicoControllerTest {
                     "titulo": "titulo novo",
                     "descricao": "descricao nova",
                     "preco": 1.00,
-                    "categorias": ["AULAS"],
+                    "categoria": "AULAS",
                     "status": "PAUSADO"
                 }
                 """;
@@ -151,7 +148,7 @@ public class ServicoControllerTest {
                     "titulo": "titulo novo",
                     "descricao": "descricao nova",
                     "preco": 1.00,
-                    "categorias": ["AULAS"],
+                    "categoria": "AULAS",
                     "status": "PAUSADO"
                 }
                 """;
@@ -167,7 +164,7 @@ public class ServicoControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.titulo").value(patchResponseDTO.titulo()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.descricao").value(patchResponseDTO.descricao()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.preco").value(patchResponseDTO.preco()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.categorias[0]").value(CategoriaServico.AULAS.name()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.categoria").value(CategoriaServico.AULAS.name()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(patchResponseDTO.status().name()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(patchResponseDTO.id().toString()));
     }
@@ -179,7 +176,7 @@ public class ServicoControllerTest {
                     "titulo": "titulo novo",
                     "descricao": "descricao nova",
                     "preco": 1.00,
-                    "categorias": ["AULAS"],
+                    "categoria": "AULAS",
                     "status": "PAUSADO"
                 }
                 """;
@@ -202,7 +199,7 @@ public class ServicoControllerTest {
                     "titulo": "titulo novo",
                     "descricao": "descricao nova",
                     "preco": 1.00,
-                    "categorias": ["AULAS"],
+                    "categoria": "AULAS",
                     "status": "PAUSADO"
                 }
                 """;
@@ -216,6 +213,41 @@ public class ServicoControllerTest {
                                 .content(json)
                 ).andExpect(MockMvcResultMatchers.status().is(HttpStatus.UNAUTHORIZED.value()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void deveRetornarUmServicoPorIdComSucesso() throws Exception{
+        String id = patchId.toString();
+
+
+        when(service.getServicoById(any())).thenReturn(responseDTO);
+
+        mvc.perform(
+                MockMvcRequestBuilders
+                        .get("/servico/%s".formatted(id))
+
+        ).andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.titulo").value(responseDTO.titulo()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.descricao").value(responseDTO.descricao()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.preco").value(responseDTO.preco()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.categoria").value(responseDTO.categoria().name()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(responseDTO.status().name()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.idAnunciante").value(responseDTO.idAnunciante().toString()));
+
+    }
+
+    @Test
+    void deveDarServiceNotFoundExceptionQuandoNaoExisteServico() throws Exception{
+        String id = patchId.toString();
+
+        when(service.getServicoById(any())).thenThrow(new ServiceNotExistsException("Serviço não existe"));
+
+        mvc.perform(
+                MockMvcRequestBuilders
+                        .get("/servico/%s".formatted(id))
+        ).andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Serviço não existe"));
     }
 
 

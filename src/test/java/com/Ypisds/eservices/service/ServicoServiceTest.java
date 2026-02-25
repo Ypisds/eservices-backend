@@ -51,11 +51,11 @@ public class ServicoServiceTest {
 
     @BeforeEach
     void setup(){
-        dtoRequest = new ServicoRequestDTO("titulo", "um produto legal", BigDecimal.valueOf(100.20), Set.of(CategoriaServico.OUTROS), Status.DISPONIVEL);
+        dtoRequest = new ServicoRequestDTO("titulo", "um produto legal", BigDecimal.valueOf(100.20), CategoriaServico.OUTROS, Status.DISPONIVEL);
         usuarioCriador = new Usuario("email@gmail.com", "usuario", "senha");
         usuarioCriador.setId(idUsuario);
         usuarioCriador.setRole(Set.of(UsuarioRoles.USER));
-        patchRequestDTO = new ServicoPatchRequestDTO("titulo novo", "descricao nova", BigDecimal.TEN, Set.of(CategoriaServico.AULAS), Status.PAUSADO);
+        patchRequestDTO = new ServicoPatchRequestDTO("titulo novo", "descricao nova", BigDecimal.TEN, CategoriaServico.AULAS, Status.PAUSADO);
 
     }
 
@@ -78,7 +78,7 @@ public class ServicoServiceTest {
         assertEquals(dtoRequest.descricao(), response.descricao());
         assertEquals(dtoRequest.preco(), response.preco());
         assertEquals(dtoRequest.status(), response.status());
-        assertEquals(dtoRequest.categorias(), response.categorias());
+        assertEquals(dtoRequest.categoria(), response.categoria());
         assertEquals(idUsuario, response.idAnunciante());
 
     }
@@ -120,7 +120,7 @@ public class ServicoServiceTest {
         assertTrue(patchRequestDTO.descricao() == null || patchRequestDTO.descricao().isBlank() ? !response.descricao().isBlank() : response.descricao().equals(patchRequestDTO.descricao()));
         assertTrue(patchRequestDTO.preco() == null ? (response.preco() != null && response.preco().compareTo(BigDecimal.ZERO) > 0) : response.preco().compareTo(patchRequestDTO.preco()) == 0);
         assertTrue(patchRequestDTO.status() == null ? response.status() != null : response.status() == patchRequestDTO.status());
-        assertTrue(patchRequestDTO.categorias() == null || patchRequestDTO.categorias().isEmpty() ? !response.categorias().isEmpty() : response.categorias().equals(patchRequestDTO.categorias()));
+        assertTrue(patchRequestDTO.categoria() == null ? response.categoria() != null : response.categoria().equals(patchRequestDTO.categoria()));
 
     }
 
@@ -162,4 +162,51 @@ public class ServicoServiceTest {
         verify(servicoMapperMockado, never()).toEntity(any(), any());
         verify(servicoRepository, never()).save(any());
     }
+
+    @Test
+    void deveRetornarUmServicoComSucessoComOGetById(){
+        UUID servicoId = UUID.randomUUID();
+        Servico servico = new Servico("titulo", "descricao", BigDecimal.ONE,
+                CategoriaServico.AULAS, Status.DISPONIVEL, usuarioCriador);
+        servico.setId(servicoId);
+
+        when(servicoRepository.findById(any())).thenReturn(Optional.of(servico));
+        when(servicoMapperMockado.toResponseDTO(servico)).thenReturn(servicoMapper.toResponseDTO(servico));
+
+        ServicoResponseDTO response = servicoService.getServicoById(servicoId);
+
+        assertEquals(servicoId, response.id());
+        assertEquals(servico.getTitulo(), response.titulo());
+        assertEquals(servico.getDescricao(), response.descricao());
+        assertEquals(servico.getPreco(), response.preco());
+        assertEquals(servico.getStatus(), response.status());
+        assertEquals(servico.getCategoria(), response.categoria());
+        assertEquals(servico.getAnunciante().getId(), response.idAnunciante());
+    }
+
+    @Test
+    void deveDarServiceNotExistsExceptionQuandoNaoExisteServicoComOIDPassado(){
+        UUID servicoId = UUID.randomUUID();
+        Servico servico = new Servico("titulo", "descricao", BigDecimal.ONE,
+                CategoriaServico.AULAS, Status.DISPONIVEL, usuarioCriador);
+        servico.setId(servicoId);
+
+        when(servicoRepository.findById(any())).thenReturn(Optional.empty());
+
+        String message = assertThrows(ServiceNotExistsException.class, ()->{
+            servicoService.getServicoById(servicoId);
+            fail("Deveria ter falhado");
+        }).getMessage();
+
+        assertEquals("Serviço não existe", message);
+        verify(servicoMapperMockado, never()).toResponseDTO(any());
+
+    }
+
+    @Test
+    void deveRetornarOsServiçosComTitulosCorretos(){
+
+    }
+
 }
+

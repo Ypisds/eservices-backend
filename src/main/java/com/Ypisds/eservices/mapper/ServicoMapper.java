@@ -16,7 +16,7 @@ public class ServicoMapper {
         servico.setTitulo(dto.titulo());
         servico.setDescricao(dto.descricao());
         servico.setPreco(dto.preco());
-        servico.setCategorias(dto.categorias());
+        servico.setCategoria(dto.categoria());
         servico.setStatus(dto.status());
         return servico;
     }
@@ -25,7 +25,7 @@ public class ServicoMapper {
         if(dto.titulo() != null && !dto.titulo().isBlank()) servico.setTitulo(dto.titulo());
         if(dto.descricao() != null && !dto.descricao().isBlank()) servico.setDescricao(dto.descricao());
         if(dto.preco() != null && dto.preco().compareTo(BigDecimal.ZERO) > 0) servico.setPreco(dto.preco());
-        if(dto.categorias() != null && !dto.categorias().isEmpty()) servico.setCategorias(dto.categorias());
+        if(dto.categoria() != null) servico.setCategoria(dto.categoria());
         if(dto.status() != null) servico.setStatus(dto.status());
         return servico;
     }
@@ -35,7 +35,7 @@ public class ServicoMapper {
                 servico.getTitulo(),
                 servico.getDescricao(),
                 servico.getPreco(),
-                servico.getCategorias(),
+                servico.getCategoria(),
                 servico.getStatus(),
                 servico.getAnunciante().getId());
     }

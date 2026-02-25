@@ -8,11 +8,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
-import java.util.Set;
 
 public record ServicoRequestDTO(@NotBlank(message = "titulo é obrigatório") String titulo,
                                 @NotBlank(message = "descricao é obrigatório") String descricao,
                                 @NotNull(message = "preco é obrigatório") @Positive(message = "preço não pode ser negativo") BigDecimal preco,
-                                @NotEmpty(message = "categoria é obrigatória") Set<CategoriaServico> categorias,
+                                @NotNull(message = "categoria é obrigatória") CategoriaServico categoria,
                                 @NotNull(message = "status é obrigatório") Status status) {
 }
