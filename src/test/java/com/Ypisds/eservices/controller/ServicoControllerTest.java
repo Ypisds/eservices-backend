@@ -11,6 +11,7 @@ import com.Ypisds.eservices.exception.ServiceNotExistsException;
 import com.Ypisds.eservices.exception.UnauthorizedServiceOperationException;
 import com.Ypisds.eservices.infra.exception.GlobalExceptionHandler;
 import com.Ypisds.eservices.infra.exception.ServicoExceptionHandler;
+import com.Ypisds.eservices.model.Servico;
 import com.Ypisds.eservices.model.Usuario;
 import com.Ypisds.eservices.service.ServicoService;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -29,8 +33,10 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @WebMvcTest(value = {ServicoController.class, ServicoExceptionHandler.class, GlobalExceptionHandler.class},
         excludeFilters = @ComponentScan.Filter(
@@ -249,6 +255,43 @@ public class ServicoControllerTest {
         ).andExpect(MockMvcResultMatchers.status().isNotFound())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Serviço não existe"));
     }
+
+    @Test
+    void deveFazerUmaBuscaComFiltroComSucesso() throws Exception{
+        String tituloLike = "Serv";
+
+        List<Servico> servicos = List.of(new Servico("Servico 1", "descricao", BigDecimal.TEN, CategoriaServico.AULAS, Status.INDISPONIVEL, usuarioCriador),
+                new Servico("Servico 2", "descricao", BigDecimal.TEN, CategoriaServico.AULAS, Status.INDISPONIVEL, usuarioCriador),
+                new Servico("Alien", "descricao", BigDecimal.TEN, CategoriaServico.AULAS, Status.INDISPONIVEL, usuarioCriador)
+                );
+
+        List<Servico> servicoFiltered = servicos.stream()
+                .filter(s -> s.getTitulo().startsWith(tituloLike))
+                        .toList();
+
+        Page<ServicoResponseDTO> response = new PageImpl<ServicoResponseDTO>(servicoFiltered.stream()
+                .map(s -> new ServicoResponseDTO(
+                        UUID.randomUUID(),
+                        s.getTitulo(),
+                        s.getDescricao(),
+                        s.getPreco(),
+                        s.getCategoria(),
+                        s.getStatus(),
+                        UUID.randomUUID()
+                )).toList()
+        );
+
+        when(service.getServicoByQuery(any(), any(), any(), any(), any(), anyInt())).thenReturn(response);
+
+        mvc.perform(
+                MockMvcRequestBuilders
+                        .get("/servico")
+                        .param("titulo", tituloLike)
+        ).andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].titulo").value(response.getContent().getFirst().titulo()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[1].titulo").value(response.getContent().getLast().titulo()));
+    }
+
 
 
 }

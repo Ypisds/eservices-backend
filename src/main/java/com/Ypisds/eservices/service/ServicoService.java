@@ -3,6 +3,7 @@ package com.Ypisds.eservices.service;
 import com.Ypisds.eservices.dto.request.ServicoPatchRequestDTO;
 import com.Ypisds.eservices.dto.request.ServicoRequestDTO;
 import com.Ypisds.eservices.dto.response.ServicoResponseDTO;
+import com.Ypisds.eservices.enums.CategoriaServico;
 import com.Ypisds.eservices.enums.Status;
 import com.Ypisds.eservices.exception.SameServiceExistsException;
 import com.Ypisds.eservices.exception.ServiceNotExistsException;
@@ -65,7 +66,7 @@ public class ServicoService {
         return mapper.toResponseDTO(servicoOptional.get());
     }
 
-    public Page<ServicoResponseDTO> getServicoByQuery(String titulo, BigDecimal preco, Status status, Integer ano, int pageNumber){
+    public Page<ServicoResponseDTO> getServicoByQuery(String titulo, BigDecimal preco, CategoriaServico categoria, Status status, Integer ano, int pageNumber){
         if(pageNumber <= 0 ) throw new RuntimeException();
 
         Specification<Servico> specs = Specification.unrestricted();
@@ -82,6 +83,10 @@ public class ServicoService {
         if(ano != null){
             specs = specs.and(ServiceSpecification.createdInThisAno(ano));
         }
+        if(categoria != null){
+            specs = specs.and(ServiceSpecification.hasThisCategoria(categoria));
+        }
+
 
         Page<ServicoResponseDTO> servicos = repository.findBy(specs, q-> q.as(Servico.class)
                 .project("categoria", "anunciante")

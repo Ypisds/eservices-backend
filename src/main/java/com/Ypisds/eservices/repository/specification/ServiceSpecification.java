@@ -7,9 +7,8 @@ import com.Ypisds.eservices.model.Servico;
 import org.springframework.data.jpa.domain.Specification;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Set;
+
 
 
 public class ServiceSpecification {
@@ -40,6 +39,12 @@ public class ServiceSpecification {
 
         return (root, query, builder) ->
             builder.between(root.get("createdDate"), dataInicioDoAno, dataFimDoAno);
+   }
+
+   public static Specification<Servico> hasThisCategoria(CategoriaServico categoria){
+        if(categoria == null) return null;
+
+        return (root, query, builder) -> builder.equal(root.get("categoria"), categoria);
    }
 
 }
