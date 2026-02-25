@@ -47,4 +47,9 @@ public class ServiceSpecification {
         return (root, query, builder) -> builder.equal(root.get("categoria"), categoria);
    }
 
+   public static Specification<Servico> hasNameLike(String name){
+        return (root, query, builder) ->
+                name == null ? null : builder.like(builder.lower(root.get("anunciante").get("name")), "%" + name.toLowerCase() + "%");
+   }
+
 }

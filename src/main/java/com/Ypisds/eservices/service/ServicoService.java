@@ -67,7 +67,7 @@ public class ServicoService {
     }
 
     public Page<ServicoResponseDTO> getServicoByQuery(String titulo, BigDecimal preco, CategoriaServico categoria, Status status, Integer ano, int pageNumber){
-        if(pageNumber <= 0 ) throw new RuntimeException();
+        if(pageNumber < 0 ) throw new RuntimeException();
 
         Specification<Servico> specs = Specification.unrestricted();
 
