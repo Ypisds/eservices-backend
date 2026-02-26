@@ -39,6 +39,7 @@ public class ServiceSpecificationTest {
     void setup(){
         Usuario anunciante = new Usuario();
         anunciante.setLogin("login");
+        anunciante.setName("name");
         anunciante.setPassword("password");
         anunciante.setEmail("email@gmail.com");
 

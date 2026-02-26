@@ -1,0 +1,27 @@
+= API eservices - Documentação Técnica
+Thigas <seu-email@cin.ufpe.br>
+:toc: left
+:toclevels: 3
+:sectnums:
+
+== Introdução
+Bem-vindo à documentação da API do eservices. Esta plataforma permite a compra e venda de serviços digitais.
+
+== Autenticação
+A maioria dos endpoints requer um Bearer Token JWT enviado no header `Authorization`.
+
+=== Registrar Usuário
+include::{snippets}/user/register-success/http-request.adoc[]
+include::{snippets}/user/register-success/response-fields.adoc[]
+include::{snippets}/user/register-success/http-response.adoc[]
+
+== Serviços
+
+=== Criar um Serviço
+include::{snippets}/servico/create-servico/http-request.adoc[]
+include::{snippets}/servico/create-servico/request-fields.adoc[]
+include::{snippets}/servico/create-servico/http-response.adoc[]
+
+=== Buscar Serviços (Paginado)
+include::{snippets}/servico/get-servico-com-query-params/http-request.adoc[]
+include::{snippets}/servico/get-servico-com-query-params/http-response.adoc[]

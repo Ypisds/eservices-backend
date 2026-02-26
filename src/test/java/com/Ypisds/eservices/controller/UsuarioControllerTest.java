@@ -11,6 +11,7 @@ import com.Ypisds.eservices.service.TokenService;
 import com.Ypisds.eservices.service.UsuarioService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +21,14 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -32,6 +37,9 @@ import java.util.UUID;
 import static org.mockito.Mockito.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 
 @WebMvcTest(value = {UsuarioController.class, GlobalExceptionHandler.class},
         excludeFilters = @ComponentScan.Filter(
@@ -39,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.*;
                 classes = TokenFilter.class
         )
 )
-
+@ExtendWith(RestDocumentationExtension.class)
 class UsuarioControllerTest {
 
     @Autowired
@@ -53,9 +61,13 @@ class UsuarioControllerTest {
     UsuarioResponseDTO responseDTO;
 
     @BeforeEach
-    void setup(){
+    void setup(WebApplicationContext webApplicationContext, RestDocumentationContextProvider restDocumentation){
         requestDTO = new UsuarioRequestDTO("usuario", "senha", "name", "email@gmail.com");
         responseDTO = new UsuarioResponseDTO(UUID.randomUUID(), "usuario","name", "email@gmail.com", Set.of(UsuarioRoles.USER), LocalDateTime.now());
+
+        this.mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .apply(documentationConfiguration(restDocumentation))
+                .build();
     }
 
     @Test
@@ -76,12 +88,27 @@ class UsuarioControllerTest {
                         .post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
+                        .accept(MediaType.APPLICATION_JSON)
         )
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNotEmpty())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.login").value(responseDTO.login()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(responseDTO.name()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.email").value(responseDTO.email()));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.email").value(responseDTO.email()))
+                .andDo(document("user/register-success", requestFields(
+                        fieldWithPath("login").description("Login do usuário"),
+                        fieldWithPath("name").description("Nome do usuário"),
+                        fieldWithPath("password").description("Senha do usuário"),
+                        fieldWithPath("email").description("Email do usuário")
+                ),
+                        responseFields(
+                                fieldWithPath("id").description("ID do usuário"),
+                                fieldWithPath("login").description("Login do usuário"),
+                                fieldWithPath("name").description("Nome do usuário"),
+                                fieldWithPath("email").description("Email do usuário"),
+                                fieldWithPath("roles[]").description("Cargos do usuário"),
+                                fieldWithPath("createdAt").description("Quando foi criado o usuário")
+                        )));
 
 
     }
@@ -109,6 +136,7 @@ class UsuarioControllerTest {
                         .post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
+                        .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Validation error"));
@@ -128,8 +156,17 @@ class UsuarioControllerTest {
                         .post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
+                        .accept(MediaType.APPLICATION_JSON)
         ).andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.token").isNotEmpty());
+                .andExpect(MockMvcResultMatchers.jsonPath("$.token").isNotEmpty())
+                .andDo(document("user/login-success",
+                        requestFields(
+                                fieldWithPath("login").description("Login do usuário"),
+                                fieldWithPath("password").description("Senha do usuário")
+                        ),
+                        responseFields(
+                                fieldWithPath("token").description("Código de autorização JWT")
+                        )));
 
 
     }
@@ -152,6 +189,7 @@ class UsuarioControllerTest {
                         .post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json)
+                        .accept(MediaType.APPLICATION_JSON)
         ).andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Validation error"));
     }
